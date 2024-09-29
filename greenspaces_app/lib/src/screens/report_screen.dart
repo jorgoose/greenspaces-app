@@ -1,15 +1,17 @@
+// File: lib/screens/report_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
-class FlagLocationScreen extends StatefulWidget {
-  static const routeName = '/flag_location';
+class ReportScreen extends StatefulWidget {
+  static const routeName = '/report';
 
   @override
-  _FlagLocationScreenState createState() => _FlagLocationScreenState();
+  _ReportScreenState createState() => _ReportScreenState();
 }
 
-class _FlagLocationScreenState extends State<FlagLocationScreen> {
+class _ReportScreenState extends State<ReportScreen> {
   LatLng? _selectedLocation;
   final _descriptionController = TextEditingController();
 
@@ -17,9 +19,13 @@ class _FlagLocationScreenState extends State<FlagLocationScreen> {
     if (_selectedLocation != null && _descriptionController.text.isNotEmpty) {
       // For MVP, we just show a confirmation
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Location flagged successfully!')),
+        SnackBar(content: Text('Location reported successfully!')),
       );
-      Navigator.pop(context);
+      // Clear the form
+      setState(() {
+        _selectedLocation = null;
+        _descriptionController.clear();
+      });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -32,10 +38,6 @@ class _FlagLocationScreenState extends State<FlagLocationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Flag a Location'),
-        backgroundColor: Colors.green[700],
-      ),
       body: Stack(
         children: [
           FlutterMap(
@@ -50,7 +52,6 @@ class _FlagLocationScreenState extends State<FlagLocationScreen> {
             ),
             children: [
               TileLayer(
-                // Using the same simplified tile layer as the HomeScreen
                 urlTemplate:
                     'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
                 subdomains: ['a', 'b', 'c', 'd'],
@@ -63,8 +64,8 @@ class _FlagLocationScreenState extends State<FlagLocationScreen> {
                       width: 40.0,
                       height: 40.0,
                       builder: (ctx) => Icon(
-                        Icons.eco,
-                        color: Colors.green[700],
+                        Icons.report_problem,
+                        color: Colors.red,
                         size: 30.0,
                       ),
                     ),
@@ -72,19 +73,6 @@ class _FlagLocationScreenState extends State<FlagLocationScreen> {
                 ),
             ],
           ),
-          Positioned(
-            bottom: 10,
-            right: 10,
-            child: Container(
-              color: Colors.white70,
-              padding: EdgeInsets.all(4.0),
-              child: Text(
-                '© OpenStreetMap contributors',
-                style: TextStyle(fontSize: 10.0),
-              ),
-            ),
-          ),
-          // Overlay input fields and submit button at the bottom
           Positioned(
             bottom: 0,
             left: 0,
@@ -95,6 +83,11 @@ class _FlagLocationScreenState extends State<FlagLocationScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  Text(
+                    'Tap on the map to select a location',
+                    style: TextStyle(fontSize: 16.0),
+                  ),
+                  SizedBox(height: 8.0),
                   TextField(
                     controller: _descriptionController,
                     decoration: InputDecoration(
@@ -117,6 +110,18 @@ class _FlagLocationScreenState extends State<FlagLocationScreen> {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 10,
+            right: 10,
+            child: Container(
+              color: Colors.white70,
+              padding: EdgeInsets.all(4.0),
+              child: Text(
+                '© OpenStreetMap contributors',
+                style: TextStyle(fontSize: 10.0),
               ),
             ),
           ),

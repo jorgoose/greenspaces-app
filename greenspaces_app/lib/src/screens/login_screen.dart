@@ -17,7 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _login() {
     if (_usernameController.text == _mockUsername &&
         _passwordController.text == _mockPassword) {
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(context, '/');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Invalid username or password')),
@@ -26,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _continueAsGuest() {
-    Navigator.pushReplacementNamed(context, '/home');
+    Navigator.pushReplacementNamed(context, '/');
   }
 
   @override

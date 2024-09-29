@@ -1,10 +1,14 @@
+// File: lib/app.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+// Import the new screens
 import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/flag_location_screen.dart';
+import 'screens/main_screen.dart';
 import 'screens/event_details_screen.dart';
+import 'screens/leaderboard_screen.dart'; // Leaderboard screen
+
 import 'settings/settings_controller.dart';
 import 'settings/settings_view.dart';
 
@@ -73,16 +77,18 @@ class MyApp extends StatelessWidget {
           themeMode: settingsController.themeMode,
 
           // Initial route
-          initialRoute: '/login',
+          initialRoute: '/login', // or '/' if you want to start at MainScreen
 
           // Routes
           routes: {
+            '/': (context) => MainScreen(), // MainScreen as the default route
             '/login': (context) => LoginScreen(),
-            '/home': (context) => HomeScreen(),
-            '/flag_location': (context) => FlagLocationScreen(),
+            '/main': (context) => MainScreen(),
             '/event_details': (context) => EventDetailsScreen(),
             '/settings': (context) =>
                 SettingsView(controller: settingsController),
+            '/leaderboard': (context) => LeaderboardScreen(),
+            // Add other routes as needed
           },
         );
       },

@@ -1,6 +1,6 @@
+// File: lib/screens/home_screen.dart
+
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = '/home';
@@ -10,145 +10,169 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0;
-
-  final List<Widget> _children = [
-    MapView(),
-    ListViewScreen(),
+  List<Map<String, dynamic>> cleanupEvents = [
+    {'name': 'Cleanup at Park A', 'date': 'Dec 1, 2023', 'distance': '2 km'},
+    {'name': 'Cleanup at Park B', 'date': 'Dec 5, 2023', 'distance': '3 km'},
+    {'name': 'Cleanup at Park C', 'date': 'Dec 10, 2023', 'distance': '5 km'},
   ];
 
-  void onTabTapped(int index) {
+  String _sortOption = 'Nearest';
+
+  Future<void> _refreshList() async {
+    // Simulate fetching data from backend
+    await Future.delayed(Duration(seconds: 1));
     setState(() {
-      _currentIndex = index;
+      // Update the list if necessary
     });
   }
 
-  void _navigateToSettings() {
-    Navigator.pushNamed(context, '/settings');
-  }
-
-  void _navigateToFlagLocation() {
-    Navigator.pushNamed(context, '/flag_location');
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('GreenUp'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: _navigateToSettings,
-          ),
-        ],
-      ),
-      body: _children[_currentIndex],
-      floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToFlagLocation,
-        child: Icon(Icons.add),
-        tooltip: 'Flag a location',
-        backgroundColor: Colors.green[700],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        onTap: onTabTapped,
-        currentIndex: _currentIndex,
-        selectedItemColor: Colors.green[700],
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Map',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'List',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class MapView extends StatelessWidget {
-  final List<LatLng> flaggedLocations = [
-    LatLng(51.5, -0.09),
-    LatLng(51.51, -0.1),
-    LatLng(51.49, -0.08),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        FlutterMap(
-          options: MapOptions(
-            center: LatLng(51.5, -0.09),
-            zoom: 13.0,
-          ),
+  void _openSortOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Wrap(
           children: [
-            TileLayer(
-              urlTemplate:
-                  'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
-              subdomains: ['a', 'b', 'c', 'd'],
-              // Since 'attributionBuilder' is not available, we can omit it or handle attribution manually
+            ListTile(
+              title: Text('Sort by Nearest'),
+              onTap: () {
+                setState(() {
+                  _sortOption = 'Nearest';
+                  // Sort the list accordingly
+                });
+                Navigator.pop(context);
+              },
             ),
-            // Optional: Overlay layer to highlight green spaces (if applicable)
-            // TileLayer(
-            //   urlTemplate: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-            //   subdomains: ['a', 'b', 'c'],
-            // ),
-            MarkerLayer(
-              markers: flaggedLocations
-                  .map(
-                    (latLng) => Marker(
-                      width: 40.0,
-                      height: 40.0,
-                      point: latLng,
-                      builder: (ctx) => Icon(
-                        Icons.eco,
-                        color: Colors.green[700],
-                        size: 30.0,
-                      ),
-                    ),
-                  )
-                  .toList(),
+            ListTile(
+              title: Text('Sort by Date'),
+              onTap: () {
+                setState(() {
+                  _sortOption = 'Date';
+                  // Sort the list accordingly
+                });
+                Navigator.pop(context);
+              },
             ),
           ],
-        ),
-        // Manually add attribution if needed
-        Positioned(
-          bottom: 10,
-          right: 10,
-          child: Container(
-            color: Colors.white70,
-            padding: EdgeInsets.all(4.0),
-            child: Text(
-              '© OpenStreetMap contributors',
-              style: TextStyle(fontSize: 10.0),
+        );
+      },
+    );
+  }
+
+  void _openSearch() {
+    showSearch(context: context, delegate: CleanupSearchDelegate());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      onRefresh: _refreshList,
+      child: Column(
+        children: [
+          ListTile(
+            title: Text(
+              'Upcoming Cleanups',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.search),
+                  onPressed: _openSearch,
+                ),
+                IconButton(
+                  icon: Icon(Icons.sort),
+                  onPressed: _openSortOptions,
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+          Expanded(
+            child: ListView.builder(
+              itemCount: cleanupEvents.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  leading: Icon(
+                    Icons.event,
+                    color: Colors.green[700],
+                  ),
+                  title: Text(cleanupEvents[index]['name']),
+                  subtitle: Text(
+                      '${cleanupEvents[index]['date']} • ${cleanupEvents[index]['distance']} away'),
+                  trailing: Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    Navigator.pushNamed(context, '/event_details');
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class ListViewScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> flaggedLocations = [
-    {'name': 'Park A', 'distance': '2 km'},
-    {'name': 'Park B', 'distance': '3 km'},
-    {'name': 'Park C', 'distance': '5 km'},
+class CleanupSearchDelegate extends SearchDelegate<String> {
+  final List<String> searchResults = [
+    'Cleanup at Park A',
+    'Cleanup at Park B',
+    'Cleanup at Park C',
   ];
 
   @override
-  Widget build(BuildContext context) {
+  List<Widget>? buildActions(BuildContext context) {
+    return [
+      if (query.isNotEmpty)
+        IconButton(
+          tooltip: 'Clear',
+          icon: Icon(Icons.clear),
+          onPressed: () => query = '',
+        ),
+    ];
+  }
+
+  @override
+  Widget? buildLeading(BuildContext context) {
+    return IconButton(
+      tooltip: 'Back',
+      icon: Icon(Icons.arrow_back),
+      onPressed: () => close(context, ''),
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    final results = searchResults.where((event) {
+      return event.toLowerCase().contains(query.toLowerCase());
+    }).toList();
+
     return ListView.builder(
-      itemCount: flaggedLocations.length,
+      itemCount: results.length,
       itemBuilder: (context, index) {
+        final event = results[index];
         return ListTile(
-          title: Text(flaggedLocations[index]['name']),
-          subtitle: Text('${flaggedLocations[index]['distance']} away'),
-          trailing: Icon(Icons.arrow_forward_ios),
+          title: Text(event),
+          onTap: () {
+            Navigator.pushNamed(context, '/event_details');
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    final suggestions = searchResults.where((event) {
+      return event.toLowerCase().contains(query.toLowerCase());
+    }).toList();
+
+    return ListView.builder(
+      itemCount: suggestions.length,
+      itemBuilder: (context, index) {
+        final event = suggestions[index];
+        return ListTile(
+          title: Text(event),
           onTap: () {
             Navigator.pushNamed(context, '/event_details');
           },
